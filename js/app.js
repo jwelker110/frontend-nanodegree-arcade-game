@@ -1,13 +1,13 @@
 var xArray = [0, 100, 200, 300, 400];
-var yArray = [-25, 50, 135, 220, 305, 390];
+var yArray = [-10, 60, 145, 230, 315, 400];
 
 // Enemies our player must avoid
-var Enemy = function() {
+var Enemy = function(yIndex) {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
     this.x = -100;
-    this.y = yArray[(Math.ceil(Math.random() * 10) % 3) + 1];
-    this.speed = 100;
+    this.y = yArray[yIndex];
+    this.speed = (Math.random() * 100) + 125;
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
@@ -20,7 +20,8 @@ Enemy.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     this.x = ((this.x + 100 + (this.speed * dt)) % 605) - 100;
-
+    // calculate whether the bug is touching the player
+    
 };
 
 // Draw the enemy on the screen, required method for game
@@ -33,22 +34,28 @@ Enemy.prototype.render = function() {
 // a handleInput() method.
 var Player = function(){
     this.x = 200;
-    this.y = -25;
+    this.yIndex = 5;
+    this.y = yArray[this.yIndex];
 
     this.sprite = 'images/char-boy.png';
 };
-
+Player.prototype = Object.create(Enemy.prototype);
+Player.prototype.constructor = Object.create(Player);;
 Player.prototype.update = function(){
-
-}
-
-Player.prototype.render = function() {
-
+    
 }
 
 Player.prototype.handleInput = function(direction){
-    if (direction == 'left') {
-        this.x = 0;
+    if (direction == 'left' && this.x > 0) {
+        this.x -= 100;
+    } else if (direction == 'right' && this.x < 400) {
+        this.x += 100;
+    } else if (direction == 'up' && this.yIndex > 0) {
+        this.yIndex -= 1;
+        this.y = yArray[this.yIndex];
+    } else if (direction == 'down' && this.yIndex < 5) {
+        this.yIndex += 1;
+        this.y = yArray[this.yIndex];
     }
 };
 
@@ -56,7 +63,10 @@ Player.prototype.handleInput = function(direction){
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-var allEnemies = [new Enemy()];
+var allEnemies = [];
+for (var i = 0; i < 3; i++) {
+    allEnemies.push(new Enemy((Math.ceil(Math.random() * 10) % 3) + 1))
+}
 var player = new Player();
 
 
