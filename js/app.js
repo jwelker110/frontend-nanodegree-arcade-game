@@ -7,7 +7,7 @@ var Enemy = function(yIndex) {
     // we've provided one for you to get started
     this.x = -100;
     this.y = yArray[yIndex];
-    this.speed = (Math.random() * 100) + 125;
+    this.speed = (Math.random() * 100) + 150;
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
@@ -21,7 +21,7 @@ Enemy.prototype.update = function(dt) {
     // all computers.
     this.x = ((this.x + 100 + (this.speed * dt)) % 605) - 100;
     // calculate whether the bug is touching the player
-    
+
 };
 
 // Draw the enemy on the screen, required method for game
@@ -45,15 +45,21 @@ Player.prototype.update = function(){
     
 }
 
-Player.prototype.handleInput = function(direction){
+Player.prototype.handleInput = function(direction, sound, soundFail){
+    // sound is the sound to be triggered on movement
+    // soundFail is the sound to be triggered when movement isn't possible
     if (direction == 'left' && this.x > 0) {
+        sound.play();
         this.x -= 100;
     } else if (direction == 'right' && this.x < 400) {
+        sound.play();
         this.x += 100;
     } else if (direction == 'up' && this.yIndex > 0) {
+        sound.play();
         this.yIndex -= 1;
         this.y = yArray[this.yIndex];
     } else if (direction == 'down' && this.yIndex < 5) {
+        sound.play();
         this.yIndex += 1;
         this.y = yArray[this.yIndex];
     }
@@ -64,13 +70,20 @@ Player.prototype.handleInput = function(direction){
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var allEnemies = [];
-for (var i = 0; i < 3; i++) {
-    allEnemies.push(new Enemy((Math.ceil(Math.random() * 10) % 3) + 1))
+var enemyCount = 0;
+var enemyMax = 3;
+var intervalID = setInterval(spawnEnemy, 500);
+
+function spawnEnemy() {
+    if (enemyCount == enemyMax) {
+        clearInterval(intervalID);
+        return;
+    }
+    allEnemies.push(new Enemy((Math.ceil(Math.random() * 10) % 3) + 1));
+    enemyCount++;
 }
+
 var player = new Player();
-
-
-
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
@@ -82,5 +95,22 @@ document.addEventListener('keyup', function(e) {
         40: 'down'
     };
 
-    player.handleInput(allowedKeys[e.keyCode]);
+    player.handleInput(allowedKeys[e.keyCode], sound.move);
+});
+
+var sound = {};
+// start the music and loop continuously
+sound.music = document.getElementById("music");
+sound.move = document.getElementById("move");
+sound.correct = document.getElementById("correct");
+sound.toggleMute = function() {
+    // mutes every sound on the sound object
+    for (s in this) {
+        this[s].muted = this[s].muted ? false : true;
+    }
+}
+
+var mute = document.getElementById("mute");
+mute.addEventListener('click', function(e) {
+    sound.toggleMute();
 });
