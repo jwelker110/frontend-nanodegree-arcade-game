@@ -1,3 +1,17 @@
 body {
     text-align: center;
 }
+
+#mute {
+	display: inline-block;
+	text-decoration: none;
+	background: #4a4a4a;
+	border-radius: 5px;
+	padding: 3px 7px;
+	color: white;
+	border: solid 2px white;
+}
+
+#mute:hover {
+	border: solid 2px #ccc;
+}
