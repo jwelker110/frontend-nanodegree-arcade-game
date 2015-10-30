@@ -1,5 +1,6 @@
 var xArray = [0, 100, 200, 300, 400];
 var yArray = [-10, 60, 145, 230, 315, 400];
+var multiplier = 150;
 
 // Enemies our player must avoid
 var Enemy = function(yIndex) {
@@ -7,7 +8,7 @@ var Enemy = function(yIndex) {
     // we've provided one for you to get started
     this.x = -100;
     this.y = yArray[yIndex];
-    this.speed = (Math.random() * 100) + 150;
+    this.speed = (Math.random() * 100) + multiplier;
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
@@ -21,6 +22,20 @@ Enemy.prototype.update = function(dt) {
     // all computers.
     this.x = ((this.x + 100 + (this.speed * dt)) % 605) - 100;
     // calculate whether the bug is touching the player
+    // top of enemy-bug.png is located at bug.y + 75
+    // width of bug/character is 101 and bottom is at x + 150
+    // top of char-boy.png is located at boy.y + 60
+    // if ((this.x < player.x && this.x + 101 > player.x) && 
+    //  (this.y + 75 < player.y + 60 && this.y + 145 > player.y + 60)) {
+    //       // player is touching bug
+    //       correct.play();
+    //  }
+     var playerX = player.x + 101 / 2;
+     var playerY = player.y + 150 - 60;
+     if ((playerX >= this.x && playerX <= this.x + 101) && (playerY >= this.y + 60 && playerY <=this.y + 150)) {
+          correct.play();
+          player.reset();
+     }
 
 };
 
@@ -33,11 +48,12 @@ Enemy.prototype.render = function() {
 // This class requires an update(), render() and
 // a handleInput() method.
 var Player = function(){
-    this.x = 200;
-    this.yIndex = 5;
-    this.y = yArray[this.yIndex];
+     this.xIndex = 2;
+     this.x = xArray[this.xIndex];
+     this.yIndex = 5;
+     this.y = yArray[this.yIndex];
 
-    this.sprite = 'images/char-boy.png';
+     this.sprite = 'images/char-boy.png';
 };
 Player.prototype = Object.create(Enemy.prototype);
 Player.prototype.constructor = Object.create(Player);;
@@ -64,6 +80,13 @@ Player.prototype.handleInput = function(direction, sound, soundFail){
         this.y = yArray[this.yIndex];
     }
 };
+
+Player.prototype.reset = function() {
+     this.xIndex = 2w;
+     this.x = xArray[this.xIndex];
+     this.yIndex = 5;
+     this.y = yArray[this.yIndex];
+}
 
 
 // Now instantiate your objects.
@@ -103,6 +126,7 @@ var sound = {};
 sound.music = document.getElementById("music");
 sound.move = document.getElementById("move");
 sound.correct = document.getElementById("correct");
+sound.fail = document.getElementById("fail");
 sound.toggleMute = function() {
     // mutes every sound on the sound object
     for (s in this) {
