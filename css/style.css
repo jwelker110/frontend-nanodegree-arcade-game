@@ -5,10 +5,10 @@ body {
 #mute {
 	display: inline-block;
 	text-decoration: none;
-	background: #4a4a4a;
+	background: #fc7b7b;
 	border-radius: 5px;
 	padding: 3px 7px;
-	color: white;
+	color: #fff;
 	border: solid 2px white;
 }
 
