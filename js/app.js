@@ -25,11 +25,6 @@ Enemy.prototype.update = function(dt) {
     // top of enemy-bug.png is located at bug.y + 75
     // width of bug/character is 101 and bottom is at x + 150
     // top of char-boy.png is located at boy.y + 60
-    // if ((this.x < player.x && this.x + 101 > player.x) && 
-    //  (this.y + 75 < player.y + 60 && this.y + 145 > player.y + 60)) {
-    //       // player is touching bug
-    //       correct.play();
-    //  }
      var playerX = player.x + 101 / 2;
      var playerY = player.y + 150 - 60;
      if ((playerX >= this.x && playerX <= this.x + 101) && (playerY >= this.y + 60 && playerY <=this.y + 150)) {
@@ -82,7 +77,7 @@ Player.prototype.handleInput = function(direction, sound, soundFail){
 };
 
 Player.prototype.reset = function() {
-     this.xIndex = 2w;
+     this.xIndex = 2;
      this.x = xArray[this.xIndex];
      this.yIndex = 5;
      this.y = yArray[this.yIndex];
@@ -96,14 +91,15 @@ var allEnemies = [];
 var enemyCount = 0;
 var enemyMax = 3;
 var intervalID = setInterval(spawnEnemy, 500);
+var laneOne = 0, laneTwo = 0, laneThree = 0;
 
 function spawnEnemy() {
-    if (enemyCount == enemyMax) {
+    if (enemyMax == 0) {
         clearInterval(intervalID);
         return;
     }
     allEnemies.push(new Enemy((Math.ceil(Math.random() * 10) % 3) + 1));
-    enemyCount++;
+    enemyMax--;
 }
 
 var player = new Player();
@@ -133,7 +129,7 @@ sound.toggleMute = function() {
         this[s].muted = this[s].muted ? false : true;
     }
 }
-
+sound.toggleMute();
 var mute = document.getElementById("mute");
 mute.addEventListener('click', function(e) {
     sound.toggleMute();
