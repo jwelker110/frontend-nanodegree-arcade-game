@@ -1,19 +1,29 @@
-var xArray = [0, 100, 200, 300, 400];
+var xArray = [-100, 0, 100, 200, 300, 400];
 var yArray = [-10, 60, 145, 230, 315, 400];
 var multiplier = 150;
 
-// Enemies our player must avoid
-var Enemy = function(yIndex) {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-    this.x = -100;
+// Base sprite class
+var Sprite = function(spriteUrl, xIndex, yIndex) {
+    this.xIndex = xIndex;
+    this.x = xArray[xIndex];
+    this.yIndex = yIndex;
     this.y = yArray[yIndex];
-    this.speed = (Math.random() * 100) + multiplier;
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
-    this.sprite = 'images/enemy-bug.png';
+    this.sprite = spriteUrl;
+};
+Sprite.prototype.update = function(){};
+// Draw the enemy on the screen, required method for game
+Sprite.prototype.render = function(){
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+// Enemy class
+var Enemy = function(spriteUrl, xIndex, yIndex) {
+    Sprite.call(this, spriteUrl, xIndex, yIndex);
+    this.speed = (Math.random() * 100) + multiplier;
+};
+Enemy.prototype = Object.create(Sprite.prototype);
+// reassign constructor so that it doesn't point to Sprite
+Enemy.prototype.constructor = Enemy;
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
@@ -28,58 +38,50 @@ Enemy.prototype.update = function(dt) {
      var playerX = player.x + 101 / 2;
      var playerY = player.y + 150 - 60;
      if ((playerX >= this.x && playerX <= this.x + 101) && (playerY >= this.y + 60 && playerY <=this.y + 150)) {
-          correct.play();
+          soundboard.fail.play();
           player.reset();
      }
 
 };
 
-// Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+
+// Player class
+var Player = function(spriteUrl, xIndex, yIndex){
+    Sprite.call(this, spriteUrl, xIndex, yIndex);
+    this.initialXIndex = xIndex;
+    this.initialYIndex = yIndex;
 };
-
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
-var Player = function(){
-     this.xIndex = 2;
-     this.x = xArray[this.xIndex];
-     this.yIndex = 5;
-     this.y = yArray[this.yIndex];
-
-     this.sprite = 'images/char-boy.png';
-};
-Player.prototype = Object.create(Enemy.prototype);
-Player.prototype.constructor = Object.create(Player);;
-Player.prototype.update = function(){
-    
-}
-
-Player.prototype.handleInput = function(direction, sound, soundFail){
+Player.prototype = Object.create(Sprite.prototype);
+Player.prototype.constructor = Player;
+// handle key presses to move the player around
+Player.prototype.handleInput = function(direction){
     // sound is the sound to be triggered on movement
     // soundFail is the sound to be triggered when movement isn't possible
-    if (direction == 'left' && this.x > 0) {
-        sound.play();
+    if (direction == 'left' && this.x > 0 && isPathClear(this.xIndex - 1, this.yIndex)) {
+        soundboard.move.play();
+        this.xIndex -= 1;
         this.x -= 100;
-    } else if (direction == 'right' && this.x < 400) {
-        sound.play();
+    } else if (direction == 'right' && this.x < 400 && isPathClear(this.xIndex + 1, this.yIndex)) {
+        soundboard.move.play();
+        this.xIndex += 1;
         this.x += 100;
-    } else if (direction == 'up' && this.yIndex > 0) {
-        sound.play();
+    } else if (direction == 'up' && this.yIndex > 0 && isPathClear(this.xIndex, this.yIndex - 1)) {
+        soundboard.move.play();
         this.yIndex -= 1;
         this.y = yArray[this.yIndex];
-    } else if (direction == 'down' && this.yIndex < 5) {
-        sound.play();
+    } else if (direction == 'down' && this.yIndex < 5 && isPathClear(this.xIndex, this.yIndex + 1)) {
+        soundboard.move.play();
         this.yIndex += 1;
         this.y = yArray[this.yIndex];
+    } else if (direction == 'left' || direction == 'right' || direction == 'up' || direction == 'down') {
+        soundboard.block.play();
     }
 };
-
+// reset the player back to original position
 Player.prototype.reset = function() {
-     this.xIndex = 2;
+     this.xIndex = this.initialXIndex;
      this.x = xArray[this.xIndex];
-     this.yIndex = 5;
+     this.yIndex = this.initialYIndex;
      this.y = yArray[this.yIndex];
 }
 
@@ -98,11 +100,12 @@ function spawnEnemy() {
         clearInterval(intervalID);
         return;
     }
-    allEnemies.push(new Enemy((Math.ceil(Math.random() * 10) % 3) + 1));
+    // allEnemies.push(new Enemy());
+    allEnemies.push(new Enemy('images/enemy-bug.png', 1, (Math.ceil(Math.random() * 10) % 3) + 1));
     enemyMax--;
 }
 
-var player = new Player();
+var player = new Player('images/char-boy.png', 3, 5);
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
@@ -114,23 +117,50 @@ document.addEventListener('keyup', function(e) {
         40: 'down'
     };
 
-    player.handleInput(allowedKeys[e.keyCode], sound.move);
+    player.handleInput(allowedKeys[e.keyCode]);
 });
 
-var sound = {};
-// start the music and loop continuously
-sound.music = document.getElementById("music");
-sound.move = document.getElementById("move");
-sound.correct = document.getElementById("correct");
-sound.fail = document.getElementById("fail");
-sound.toggleMute = function() {
+// create rock object to place in field
+var Rock = function(spriteUrl, xIndex, yIndex){
+    Sprite.call(this, spriteUrl, xIndex, yIndex);
+}
+Rock.prototype = Object.create(Sprite.prototype);
+Rock.prototype.constructor = Rock;
+
+var allRocks = [];
+allRocks.push(new Rock('images/Rock.png', 2, 5));
+allRocks.push(new Rock('images/Rock.png', 4, 5));
+
+function isPathClear(xIndex, yIndex){
+    for (r in allRocks) {
+        if (allRocks[r].xIndex == xIndex && allRocks[r].yIndex == yIndex) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// sound class
+var Sound = function(){
+    // start the music and loop continuously
+    this.music = document.getElementById("music");
+    this.move = document.getElementById("move");
+    this.correct = document.getElementById("correct");
+    this.fail = document.getElementById("fail");
+    this.win = document.getElementById("win");
+    this.block = document.getElementById("block");
+}
+Sound.prototype.toggleMute = function() {
     // mutes every sound on the sound object
     for (s in this) {
-        this[s].muted = this[s].muted ? false : true;
+        if (this[s] != null){
+            this[s].muted = this[s].muted ? false : true;
+        }
     }
-}
-sound.toggleMute();
+};
+var soundboard = new Sound();
+soundboard.toggleMute();
 var mute = document.getElementById("mute");
 mute.addEventListener('click', function(e) {
-    sound.toggleMute();
+    soundboard.toggleMute();
 });
