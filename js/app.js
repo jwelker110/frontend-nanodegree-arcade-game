@@ -9,6 +9,7 @@ var rareGemSprite = 'images/Gem Green.png';
 var winSprite = 'images/Selector.png';
 var maxGems = 1;
 var score = 0;
+var levelWon = false;
 
 // Base sprite class
 var Sprite = function(spriteUrl, xIndex, yIndex) {
@@ -21,7 +22,9 @@ var Sprite = function(spriteUrl, xIndex, yIndex) {
 Sprite.prototype.update = function(){};
 // Draw the enemy on the screen, required method for game
 Sprite.prototype.render = function(){
+    if ( !levelWon ) {
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    }
 };
 
 // Gem class so player can grab the gem!
@@ -89,6 +92,7 @@ Star.prototype.update = function() {
         soundboard.win.play();
         this.visible = false;
         this.captured = true;
+        levelWon = true;
     }
 };
 // This is so that the user can have a random finishing location
