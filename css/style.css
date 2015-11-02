@@ -2,8 +2,20 @@ body {
     text-align: center;
 }
 
+#info {
+	width: 50%;
+	margin: 10px auto 0;
+}
+
+#level {
+	display: inline-block;
+	width: 50%;
+	line-height: 1em;
+}
+
 #mute {
 	display: inline-block;
+	width: 50%;
 	text-decoration: none;
 	background: #fc7b7b;
 	border-radius: 5px;
