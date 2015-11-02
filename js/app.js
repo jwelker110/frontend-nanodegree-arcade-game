@@ -128,8 +128,14 @@ Rock.prototype = Object.create(Sprite.prototype);
 Rock.prototype.constructor = Rock;
 
 var allRocks = [];
-allRocks.push(new Rock('images/Rock.png', 2, 5));
-allRocks.push(new Rock('images/Rock.png', 4, 5));
+// contains rock properties with x/y Indices for that rock's position
+var rockCoords = {
+    "rockOne": [2, 5],
+    "rockTwo": [4, 5]
+}
+for (c in rockCoords) {
+    allRocks.push(new Rock('images/Rock.png', rockCoords[c][0], rockCoords[c][1]));
+}
 
 function isPathClear(xIndex, yIndex){
     for (r in allRocks) {
