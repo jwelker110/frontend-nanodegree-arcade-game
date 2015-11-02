@@ -24,6 +24,7 @@ Sprite.prototype.render = function(){
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+// Gem class so player can grab the gem!
 var Gem = function(gemSprite, xIndex, yIndex) {
     Sprite.call(this, gemSprite, xIndex, yIndex);
     this.visible = true;
@@ -50,9 +51,10 @@ Gem.prototype.update = function() {
 
 var allGems = [];
 for (var i = 0; i < maxGems; i++) {
-    allGems.push(new Gem(gemSprite, (Math.ceil((Math.random() * 100) % 4)) + 1, (Math.ceil((Math.random() * 100) % 3)) + 1))
+    allGems.push(new Gem(gemSprite, (Math.ceil((Math.random() * 100) % 4)) + 1, (Math.ceil((Math.random() * 100) % 3)) + 1));
 }
 
+// Star class. Represents the final block the user navigates to in order to finish level
 var Star = function(winSprite, xIndex, yIndex) {
     // subclass the gem since they share some properties.
     Sprite.call(this, winSprite, xIndex, yIndex);
@@ -79,6 +81,7 @@ Star.prototype.update = function() {
     var playerX = player.x + 101 / 2;
     var playerY = player.y + 150 - 60;
     if ((playerX >= this.x && playerX <= this.x + 101) && (playerY >= this.y && playerY <= this.y + 60)) {
+        // if the player has stepped on block, mute all sounds, play final sound, clear the canvas.
         var canvas = document.getElementsByTagName('canvas')[0];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         soundboard.stopAll();
@@ -88,6 +91,7 @@ Star.prototype.update = function() {
         this.captured = true;
     }
 };
+// This is so that the user can have a random finishing location
 var randomStarPos = [1, 5];
 var pos = Math.floor((Math.random() * 100) % 2);
 var star = new Star(winSprite, randomStarPos[pos], 6);
