@@ -1,6 +1,14 @@
 var xArray = [-100, 0, 100, 200, 300, 400];
-var yArray = [-10, 60, 145, 230, 315, 400];
+var yArray = [-25, 60, 145, 230, 315, 400, 475];
 var multiplier = 150;
+var playerSprite = 'images/char-boy.png';
+var enemySprite = 'images/enemy-bug.png';
+var rockSprite = 'images/Rock.png';
+var gemSprite = 'images/Gem Blue.png';
+var rareGemSprite = 'images/Gem Green.png';
+var winSprite = 'images/Selector.png';
+var maxGems = 1;
+var score = 0;
 
 // Base sprite class
 var Sprite = function(spriteUrl, xIndex, yIndex) {
@@ -16,9 +24,77 @@ Sprite.prototype.render = function(){
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+var Gem = function(gemSprite, xIndex, yIndex) {
+    Sprite.call(this, gemSprite, xIndex, yIndex);
+    this.visible = true;
+}
+Gem.prototype = Object.create(Sprite.prototype);
+Gem.prototype.constructor = Gem;
+Gem.prototype.render = function() {
+    // draws in middle of block
+    if (this.visible) {
+        ctx.drawImage(Resources.get(this.sprite), this.x + 26, this.y - 25, 50, 75);
+    }
+};
+Gem.prototype.update = function() {
+    if ( !this.visible ) {
+        return;
+    }
+    var playerX = player.x + 101 / 2;
+    var playerY = player.y + 150 - 60;
+    if ((playerX >= this.x && playerX <= this.x + 101) && (playerY >= this.y && playerY <= this.y + 60)) {
+        soundboard.correct.play();
+        this.visible = false;
+    }
+};
+
+var allGems = [];
+for (var i = 0; i < maxGems; i++) {
+    allGems.push(new Gem(gemSprite, (Math.ceil((Math.random() * 100) % 4)) + 1, (Math.ceil((Math.random() * 100) % 3)) + 1))
+}
+
+var Star = function(winSprite, xIndex, yIndex) {
+    // subclass the gem since they share some properties.
+    Sprite.call(this, winSprite, xIndex, yIndex);
+    this.visible = false;
+}
+Star.prototype = Object.create(Gem.prototype);
+Star.prototype.constructor = Star;
+Star.prototype.render = function() {
+    if (this.visible) {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y-100);
+    }
+}
+Star.prototype.update = function() {
+    if ( this.captured ) {
+        return;
+    }
+    // checks all the gems and if they are all gone, will become visible
+    for (g in allGems) {
+        if (allGems[g].visible) {
+            return;
+        }
+    }
+    this.visible = true;
+    var playerX = player.x + 101 / 2;
+    var playerY = player.y + 150 - 60;
+    if ((playerX >= this.x && playerX <= this.x + 101) && (playerY >= this.y && playerY <= this.y + 60)) {
+        var canvas = document.getElementsByTagName('canvas')[0];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        soundboard.stopAll();
+        soundboard.win.muted = false;
+        soundboard.win.play();
+        this.visible = false;
+        this.captured = true;
+    }
+};
+
+var star = new Star(winSprite, 3, 6);
+
+
 // Enemy class
-var Enemy = function(spriteUrl, xIndex, yIndex) {
-    Sprite.call(this, spriteUrl, xIndex, yIndex);
+var Enemy = function(xIndex, yIndex) {
+    Sprite.call(this, enemySprite, xIndex, yIndex);
     this.speed = (Math.random() * 100) + multiplier;
 };
 Enemy.prototype = Object.create(Sprite.prototype);
@@ -33,7 +109,7 @@ Enemy.prototype.update = function(dt) {
     this.x = ((this.x + 100 + (this.speed * dt)) % 605) - 100;
     // calculate whether the bug is touching the player
     // top of enemy-bug.png is located at bug.y + 75
-    // width of bug/character is 101 and bottom is at x + 150
+    // width of bug/character is 101 and bottom is at y + 150
     // top of char-boy.png is located at boy.y + 60
      var playerX = player.x + 101 / 2;
      var playerY = player.y + 150 - 60;
@@ -46,8 +122,8 @@ Enemy.prototype.update = function(dt) {
 
 
 // Player class
-var Player = function(spriteUrl, xIndex, yIndex){
-    Sprite.call(this, spriteUrl, xIndex, yIndex);
+var Player = function(xIndex, yIndex){
+    Sprite.call(this, playerSprite, xIndex, yIndex);
     this.initialXIndex = xIndex;
     this.initialYIndex = yIndex;
 };
@@ -101,11 +177,11 @@ function spawnEnemy() {
         return;
     }
     // allEnemies.push(new Enemy());
-    allEnemies.push(new Enemy('images/enemy-bug.png', 1, (Math.ceil(Math.random() * 10) % 3) + 1));
+    allEnemies.push(new Enemy(0, (Math.ceil(Math.random() * 10) % 3) + 1));
     enemyMax--;
 }
 
-var player = new Player('images/char-boy.png', 3, 5);
+var player = new Player(3, 5);
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
@@ -121,20 +197,25 @@ document.addEventListener('keyup', function(e) {
 });
 
 // create rock object to place in field
-var Rock = function(spriteUrl, xIndex, yIndex){
-    Sprite.call(this, spriteUrl, xIndex, yIndex);
+var Rock = function(xIndex, yIndex){
+    Sprite.call(this, rockSprite, xIndex, yIndex);
 }
 Rock.prototype = Object.create(Sprite.prototype);
 Rock.prototype.constructor = Rock;
 
 var allRocks = [];
 // contains rock properties with x/y Indices for that rock's position
-var rockCoords = {
-    "rockOne": [2, 5],
-    "rockTwo": [4, 5]
-}
+var rockCoords =[
+    [1, 0],
+    [2, 0],
+    [3, 0],
+    [4, 0],
+    [5, 0],
+    [2, 5],
+    [4, 5]];
+
 for (c in rockCoords) {
-    allRocks.push(new Rock('images/Rock.png', rockCoords[c][0], rockCoords[c][1]));
+    allRocks.push(new Rock(rockCoords[c][0], rockCoords[c][1]));
 }
 
 function isPathClear(xIndex, yIndex){
@@ -161,6 +242,14 @@ Sound.prototype.toggleMute = function() {
     for (s in this) {
         if (this[s] != null){
             this[s].muted = this[s].muted ? false : true;
+        }
+    }
+};
+Sound.prototype.stopAll = function() {
+    for (s in this) {
+        if (this[s] != null) {
+            this[s].loop = false;
+            this[s].muted = true;
         }
     }
 };
