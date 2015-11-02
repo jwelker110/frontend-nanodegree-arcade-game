@@ -88,8 +88,9 @@ Star.prototype.update = function() {
         this.captured = true;
     }
 };
-
-var star = new Star(winSprite, 3, 6);
+var randomStarPos = [1, 5];
+var pos = Math.floor((Math.random() * 100) % 2);
+var star = new Star(winSprite, randomStarPos[pos], 6);
 
 
 // Enemy class
@@ -211,7 +212,9 @@ var rockCoords =[
     [3, 0],
     [4, 0],
     [5, 0],
+    [2, 4],
     [2, 5],
+    [4, 4],
     [4, 5]];
 
 for (c in rockCoords) {
