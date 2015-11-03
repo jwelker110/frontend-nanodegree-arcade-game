@@ -1,6 +1,6 @@
 Front End Nanodegree Arcade Game
 ===============================
-
+The current implementation can be seen in action [here](http://jwelker110.github.io/frontend-nanodegree-arcade-game/#).
 ### Purpose
 This project was created to teach the usefulness and implementation of JavaScript classes while utilizing the given art assets and game engine.
 
