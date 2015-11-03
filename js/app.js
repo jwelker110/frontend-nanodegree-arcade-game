@@ -53,8 +53,13 @@ Gem.prototype.update = function() {
 };
 
 var allGems = [];
+if (maxGems > 15) {
+    maxGems = 15;
+}
 for (var i = 0; i < maxGems; i++) {
-    allGems.push(new Gem(gemSprite, (Math.ceil((Math.random() * 100) % 4)) + 1, (Math.ceil((Math.random() * 100) % 3)) + 1));
+    var x = (Math.ceil((Math.random() * 100) % 4)) + 1;
+    var y = (Math.ceil((Math.random() * 100) % 3)) + 1);
+    allGems.push(new Gem(gemSprite, x, y);
 }
 
 // Star class. Represents the final block the user navigates to in order to finish level
@@ -96,9 +101,9 @@ Star.prototype.update = function() {
     }
 };
 // This is so that the user can have a random finishing location
-var randomStarPos = [1, 5];
+var randomStarPos = [1, 3, 5];
 var pos = Math.floor((Math.random() * 100) % 2);
-var star = new Star(winSprite, randomStarPos[pos], 6);
+var star = new Star(winSprite, randomStarPos[pos], 1);
 
 
 // Enemy class
@@ -215,11 +220,8 @@ Rock.prototype.constructor = Rock;
 var allRocks = [];
 // contains rock properties with x/y Indices for that rock's position
 var rockCoords =[
-    [1, 0],
     [2, 0],
-    [3, 0],
     [4, 0],
-    [5, 0],
     [2, 4],
     [2, 5],
     [4, 4],
