@@ -11,11 +11,11 @@ body {
 	display: inline-block;
 	width: 50%;
 	line-height: 1em;
+	margin: 0;
 }
 
 #mute {
 	display: inline-block;
-	width: 50%;
 	text-decoration: none;
 	background: #fc7b7b;
 	border-radius: 5px;
@@ -26,4 +26,10 @@ body {
 
 #mute:hover {
 	border: solid 2px #ccc;
+}
+
+#mute-container {
+	margin: 5px auto;
+	text-align: center;
+	width: 50%;
 }
