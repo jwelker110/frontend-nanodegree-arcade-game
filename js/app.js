@@ -1,15 +1,41 @@
 var xArray = [-100, 0, 100, 200, 300, 400];
 var yArray = [-25, 60, 145, 230, 315, 400, 475];
-var multiplier = 150;
 var playerSprite = 'images/char-boy.png';
 var enemySprite = 'images/enemy-bug.png';
 var rockSprite = 'images/Rock.png';
 var gemSprite = 'images/Gem Blue.png';
 var rareGemSprite = 'images/Gem Green.png';
 var winSprite = 'images/Selector.png';
-var maxGems = 1;
 var score = 0;
 var levelWon = false;
+
+
+// sound class
+var Sound = function(){
+    // start the music and loop continuously
+    this.music = document.getElementById("music");
+    this.move = document.getElementById("move");
+    this.correct = document.getElementById("correct");
+    this.fail = document.getElementById("fail");
+    this.win = document.getElementById("win");
+    this.block = document.getElementById("block");
+}
+Sound.prototype.toggleMute = function() {
+    // mutes every sound on the sound object
+    for (s in this) {
+        if (this[s] != null){
+            this[s].muted = this[s].muted ? false : true;
+        }
+    }
+};
+Sound.prototype.stopAll = function() {
+    for (s in this) {
+        if (this[s] != null) {
+            this[s].loop = false;
+            this[s].muted = true;
+        }
+    }
+};
 
 // Base sprite class
 var Sprite = function(spriteUrl, xIndex, yIndex) {
@@ -52,15 +78,12 @@ Gem.prototype.update = function() {
     }
 };
 
-var allGems = [];
-if (maxGems > 15) {
-    maxGems = 15;
+// Rock class. Represents impassible blocks
+var Rock = function(xIndex, yIndex){
+    Sprite.call(this, rockSprite, xIndex, yIndex);
 }
-for (var i = 0; i < maxGems; i++) {
-    var x = (Math.ceil((Math.random() * 100) % 4)) + 1;
-    var y = (Math.ceil((Math.random() * 100) % 3)) + 1;
-    allGems.push(new Gem(gemSprite, x, y));
-}
+Rock.prototype = Object.create(Sprite.prototype);
+Rock.prototype.constructor = Rock;
 
 // Star class. Represents the final block the user navigates to in order to finish level
 var Star = function(winSprite, xIndex, yIndex) {
@@ -100,11 +123,6 @@ Star.prototype.update = function() {
         levelWon = true;
     }
 };
-// This is so that the user can have a random finishing location
-var randomStarPos = [1, 3, 5];
-var pos = Math.floor((Math.random() * 100) % 2);
-var star = new Star(winSprite, randomStarPos[pos], 1);
-
 
 // Enemy class
 var Enemy = function(xIndex, yIndex) {
@@ -175,30 +193,65 @@ Player.prototype.reset = function() {
      this.y = yArray[this.yIndex];
 }
 
-
-// Now instantiate your objects.
+// vars to get the game setup
+var pos, star, player, intervalID;
+// vars that can be customized
+// maxGems = Maximum # of gems on the board. No more than 15
+// randomStarPos = Array of x coords of the ending star block. If the 
+//                 star block is on top of a rock, it won't be accessible
+// enemyMax = Maximum # of enemies on the board
+// rockCoords = Array of rock coordinate arrays
+var maxGems, randomStarPos, enemyMax, rockCoords, multiplier;
+// place gems in array
+var allGems;
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-var allEnemies = [];
+var allEnemies;
 var enemyCount = 0;
-var enemyMax = 3;
-var intervalID = setInterval(spawnEnemy, 500);
-var laneOne = 0, laneTwo = 0, laneThree = 0;
+// Rock details
+var allRocks;
 
-function spawnEnemy() {
-    if (enemyMax == 0) {
-        clearInterval(intervalID);
-        return;
-    }
-    // allEnemies.push(new Enemy());
-    allEnemies.push(new Enemy(0, (Math.ceil(Math.random() * 10) % 3) + 1));
-    enemyMax--;
-}
+var soundboard = new Sound();
 
-var player = new Player(3, 5);
+var levels = [{
+    "randomStarPos": [1, 3, 5],
+    "enemyMax": 3,
+    "rockCoords": [
+        [2, 0],
+        [4, 0],
+        [2, 4],
+        [2, 5],
+        [4, 4],
+        [4, 5]],
+    "maxGems": 1,
+    "multiplier": 150 // speed the bugs move
+}];
+var levelCount = levels.length;
+var currentLevel = 0;
+var levelDisplay = document.getElementById("level");
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
+initializeGame(levels[currentLevel]);
+
+/*
+ * Listeners
+ */
+
+// mute button and progress button
+var mute = document.getElementById("mute");
+mute.addEventListener('click', function(e) {
+    soundboard.toggleMute();
+});
+
+var next = document.getElementById("next");
+next.addEventListener('click', function(e) {
+    // reset the game, or move to the next level
+    currentLevel++;
+    currentLevel %= levelCount;
+    initializeGame(levels[currentLevel]);
+});
+
+// This listens for key presses and sends to 
+// Player handleInput method
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {
         37: 'left',
@@ -210,27 +263,79 @@ document.addEventListener('keyup', function(e) {
     player.handleInput(allowedKeys[e.keyCode]);
 });
 
-// create rock object to place in field
-var Rock = function(xIndex, yIndex){
-    Sprite.call(this, rockSprite, xIndex, yIndex);
+/*
+ * Functions
+ */
+
+/*
+ * Get the game set up and initialize vars
+ * for a custom level, pass in level object 
+ * similar to the above.
+ */
+function initializeGame(level) {
+    levelDisplay.innerHTML = "Level: " + (currentLevel+1) + "/" + levelCount;
+    // initialize the game
+    allGems = [];
+    allEnemies = [];
+    allRocks = [];
+    // initialize these with the passed in values
+    maxGems = level.maxGems;
+    randomStarPos = level.randomStarPos;
+    enemyMax = level.enemyMax;
+    rockCoords = level.rockCoords;
+    levelWon = false;
+    multiplier = level.multiplier;
+
+    soundboard.music.muted = false;
+    soundboard.block.muted = false;
+    soundboard.move.muted = false;
+    soundboard.correct.muted = false;
+    soundboard.fail.muted = false;
+    soundboard.win.muted = false;
+    soundboard.music.play();
+
+    // set up the gems on the stage
+    if (maxGems > 15) {
+        maxGems = 15;
+    }
+    for (var i = 0; i < maxGems; i++) {
+        var x = (Math.ceil((Math.random() * 100) % 4)) + 1;
+        var y = (Math.ceil((Math.random() * 100) % 3)) + 1;
+        allGems.push(new Gem(gemSprite, x, y));
+    }
+
+    // This is so that the user can have a random finishing location
+    pos = Math.floor((Math.random() * 100) % 2);
+    star = new Star(winSprite, randomStarPos[pos], 1);
+
+    // generates the enemy spawns
+    intervalID = setInterval(spawnEnemy, 500);
+
+    // create the player and place them
+    player = new Player(3, 5);
+
+    for (c in rockCoords) {
+        allRocks.push(new Rock(rockCoords[c][0], rockCoords[c][1]));
+    }
+
 }
-Rock.prototype = Object.create(Sprite.prototype);
-Rock.prototype.constructor = Rock;
 
-var allRocks = [];
-// contains rock properties with x/y Indices for that rock's position
-var rockCoords =[
-    [2, 0],
-    [4, 0],
-    [2, 4],
-    [2, 5],
-    [4, 4],
-    [4, 5]];
-
-for (c in rockCoords) {
-    allRocks.push(new Rock(rockCoords[c][0], rockCoords[c][1]));
+/*
+ * Spawn an enemy on the board
+ */
+function spawnEnemy() {
+    if (enemyMax == 0) {
+        clearInterval(intervalID);
+        return;
+    }
+    // allEnemies.push(new Enemy());
+    allEnemies.push(new Enemy(0, (Math.ceil(Math.random() * 10) % 3) + 1));
+    enemyMax--;
 }
 
+/*
+ * Check if the given coords are passable
+ */
 function isPathClear(xIndex, yIndex){
     for (r in allRocks) {
         if (allRocks[r].xIndex == xIndex && allRocks[r].yIndex == yIndex) {
@@ -240,34 +345,12 @@ function isPathClear(xIndex, yIndex){
     return true;
 }
 
-// sound class
-var Sound = function(){
-    // start the music and loop continuously
-    this.music = document.getElementById("music");
-    this.move = document.getElementById("move");
-    this.correct = document.getElementById("correct");
-    this.fail = document.getElementById("fail");
-    this.win = document.getElementById("win");
-    this.block = document.getElementById("block");
-}
-Sound.prototype.toggleMute = function() {
-    // mutes every sound on the sound object
-    for (s in this) {
-        if (this[s] != null){
-            this[s].muted = this[s].muted ? false : true;
-        }
-    }
-};
-Sound.prototype.stopAll = function() {
-    for (s in this) {
-        if (this[s] != null) {
-            this[s].loop = false;
-            this[s].muted = true;
-        }
-    }
-};
-var soundboard = new Sound();
-var mute = document.getElementById("mute");
-mute.addEventListener('click', function(e) {
-    soundboard.toggleMute();
-});
+
+
+
+
+
+
+
+
+
