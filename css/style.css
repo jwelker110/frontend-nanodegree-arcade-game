@@ -9,7 +9,6 @@ body {
 
 #level {
 	display: inline-block;
-	width: 50%;
 	line-height: 1em;
 	margin: 0;
 }
@@ -24,8 +23,19 @@ body {
 	border: solid 2px white;
 }
 
-#mute:hover {
+#mute:hover,
+#next:hover {
 	border: solid 2px #ccc;
+}
+
+#next {
+	display: inline-block;
+	text-decoration: none;
+	background: #78AB46;
+	border-radius: 5px;
+	padding: 3px 7px;
+	color: #fff;
+	border: solid 2px white;
 }
 
 #mute-container {
