@@ -267,7 +267,6 @@ Sound.prototype.stopAll = function() {
     }
 };
 var soundboard = new Sound();
-soundboard.toggleMute();
 var mute = document.getElementById("mute");
 mute.addEventListener('click', function(e) {
     soundboard.toggleMute();
