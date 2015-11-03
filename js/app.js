@@ -9,6 +9,21 @@ var winSprite = 'images/Selector.png';
 var score = 0;
 var levelWon = false;
 
+// Customize this by adding more levels, or changing the current values
+var levels = [{
+    "randomStarPos": [1, 3, 5],
+    "enemyMax": 3,
+    "rockCoords": [
+        [2, 0],
+        [4, 0],
+        [2, 4],
+        [2, 5],
+        [4, 4],
+        [4, 5]],
+    "maxGems": 1,
+    "multiplier": 150 // speed the bugs move
+}];
+
 
 // sound class
 var Sound = function(){
@@ -213,19 +228,6 @@ var allRocks;
 
 var soundboard = new Sound();
 
-var levels = [{
-    "randomStarPos": [1, 3, 5],
-    "enemyMax": 3,
-    "rockCoords": [
-        [2, 0],
-        [4, 0],
-        [2, 4],
-        [2, 5],
-        [4, 4],
-        [4, 5]],
-    "maxGems": 1,
-    "multiplier": 150 // speed the bugs move
-}];
 var levelCount = levels.length;
 var currentLevel = 0;
 var levelDisplay = document.getElementById("level");
