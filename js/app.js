@@ -58,8 +58,8 @@ if (maxGems > 15) {
 }
 for (var i = 0; i < maxGems; i++) {
     var x = (Math.ceil((Math.random() * 100) % 4)) + 1;
-    var y = (Math.ceil((Math.random() * 100) % 3)) + 1);
-    allGems.push(new Gem(gemSprite, x, y);
+    var y = (Math.ceil((Math.random() * 100) % 3)) + 1;
+    allGems.push(new Gem(gemSprite, x, y));
 }
 
 // Star class. Represents the final block the user navigates to in order to finish level
